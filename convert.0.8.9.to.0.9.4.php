@@ -9,7 +9,7 @@ if (!file_exists($filename)) { exit($filename.' does not exist'.PHP_EOL); }
 
 $start = microtime(true);
 
-$resultFilenameTemplate = $filename.'.converted.part.%002d';
+$resultFilenameTemplate = $filename.'.converted.part.%03d';
 $part = 1;
 $resultFilename = sprintf($resultFilenameTemplate, $part);
 $resultFiles = array($resultFilename);
