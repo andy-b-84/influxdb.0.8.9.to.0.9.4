@@ -42,12 +42,16 @@ while ($string = fgets($pointer)) {
         fputs($resultPointer, $string);
     } else {
         $dmlFound = false;
-        $dataLines++;
         if (0 == ($dataLines%100000)) {
             echo $dataLines.' lines treated'.PHP_EOL;
         }
-        if (0 == ($dataLines%8000000)) {
+
+        if ((0 < $dataLines) && (0 == ($dataLines%8000000))) {
             $part++;
+            //insert 5000 lines so that the engine REALLY writes every lines in the file, but not these
+            for ($fake=0; $fake<5000; $fake++) {
+                fputs($resultPointer, 'you_can_delete_this_measurement_after_import '.$mainColumn.'=0i'.' 0'.PHP_EOL);
+            }
             fclose($resultPointer);
             $resultFilename = sprintf($resultFilenameTemplate, $part);
             $resultFiles[] = $resultFilename;
@@ -55,6 +59,7 @@ while ($string = fgets($pointer)) {
             fputs($resultPointer, $otherPartsStart);
             echo '8 000 000 lines reached, switching to new file : '.$resultFilename.PHP_EOL;
         }
+
         $collection = $array[0];
         $point = str_replace('"', '', str_replace('""', '"UNKNOWN"', implode('\\ ', array_slice($array, 1, count($array)-2))));
         $timestamp = intval($timestamp);
@@ -65,12 +70,22 @@ while ($string = fgets($pointer)) {
             $addedMicrosecond++;
         }
         $timestamp+=$addedMicrosecond;
+
         $matches = array();
         $found = preg_match('/(.+),('.$mainColumn.'=[0-9]+i),(.+)/', $point, $matches);
         if ($found) {
             $treatedDataLines++;
             fputs($resultPointer, $collection.','.$matches[1].','.$matches[3].' '.$matches[2].' '.$timestamp.PHP_EOL);
         }
+
+        $dataLines++;
+    }
+}
+
+if (0 != ($dataLines%8000000)) {
+    //insert 5000 lines so that the engine REALLY writes every lines in the file, but not these
+    for ($fake = 0; $fake < 5000; $fake++) {
+        fputs($resultPointer, 'you_can_delete_this_measurement_after_import ' . $mainColumn . '=0i' . ' 0' . PHP_EOL);
     }
 }
 
